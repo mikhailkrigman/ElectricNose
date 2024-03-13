@@ -49,12 +49,13 @@ const int chipSelect = SDCARD_SS_PIN;
 RTCZero my_rtc;
 
 /* Change these values to set the current initial time */
+// start measuring at 00:00
 const byte seconds = 00;
-const byte minutes = 1;
-const byte hours = 11;
+const byte minutes = 00;
+const byte hours = 00;
 
 /* Change these values to set the current initial date */
-const byte day = 4;
+const byte day = 14;
 const byte month = 3;
 const byte year = 24;
 
@@ -158,7 +159,6 @@ double timeToDigigtal(int PIN_CALCULATE, int PIN_REFERENCE){
       Time-To-Digital method using 
       PIN_REFERENCE as reference resistance 
   */ 
-  Serial.println("Start Time To Digital");
 
   // input == Grosse Impedanz
   charge_capacitor();
@@ -211,6 +211,8 @@ void compute_control_voltage(){
   control_voltage = PID_output; 
   analogWrite(PIN_DAC, control_voltage); 
 }
+
+
 unsigned long duration;
 void setup()
 {
@@ -264,7 +266,13 @@ void loop()
   compute_control_voltage();
 
   double R_sens = timeToDigigtal(PIN_Rsens, PIN_Rref);
-  save_on_SD("r_sensor.txt", String(R_sens));
+  String data_str;
+  data_str += RTCTime2string(my_rtc);
+  data_str += "#" + R_sens;
+
+  save_on_SD('sensor_data.txt', data_str);
+  
+  //save_on_SD("r_sensor.txt", String(R_sens));
   Serial.print("R_sens: ");
   Serial.println(R_sens);
 
@@ -285,18 +293,27 @@ void loop()
   //Serial.println(R_sens);
 }
 
-
-String RTCDate2string(RTCZero rtc){
+String RTCTime2string(RTCZero rtc){
   String time;
 
-  time += num2string(rtc.getDay()) + "/";
-  time += num2string(rtc.getMonth()) + "/";
-  time += num2string(rtc.getYear()) + " ";
   time += num2string(rtc.getHours()) + ":";
   time += num2string(rtc.getMinutes()) + ":";
   time += num2string(rtc.getSeconds());
 
   return time;
+}
+
+String RTCDate2string(RTCZero rtc){
+  String date_time;
+
+  date_time += num2string(rtc.getDay()) + "/";
+  date_time += num2string(rtc.getMonth()) + "/";
+  date_time += num2string(rtc.getYear()) + " ";
+  date_time += num2string(rtc.getHours()) + ":";
+  date_time += num2string(rtc.getMinutes()) + ":";
+  date_time += num2string(rtc.getSeconds());
+
+  return date_time;
 }
 
 String num2string(int num){
