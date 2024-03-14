@@ -18,8 +18,6 @@
 #include <RTCZero.h>
 #include <SPI.h>
 #include <SD.h>
-#include <PID_v1.h>
-#include <GyverPID.h>
 
 
 #define PIN_STANDBY_BUTTON 1
@@ -38,10 +36,6 @@ const double R_ref = 10.0 * pow(10, 3); // 10 kOhm
 double R_heater, PID_output, R_heater_goal;
 
 double control_voltage; // always in units!
-
-
-//PID my_PID(&R_heater, &PID_output, &R_heater_goal, Kp, Ki, Kd, DIRECT);
-//GyverPID pid2(Kp, Ki, Kd);
 
 const int chipSelect = SDCARD_SS_PIN;
 
@@ -254,24 +248,15 @@ void loop()
     go_stanbyMode(my_rtc);
   }
 
-  // Print date and time...
-  //printRTCDate(my_rtc);
-
-  //String current_time = RTCDate2string(my_rtc);
-  //Serial.println(current_time);
-  //save_on_SD("time_log.txt", current_time);
-
-  
-
   compute_control_voltage();
 
   double R_sens = timeToDigigtal(PIN_Rsens, PIN_Rref);
   String data_str;
   data_str += RTCTime2string(my_rtc);
-  data_str += "#" + R_sens;
+  data_str += "#" + String(R_sens);
 
-  save_on_SD('sensor_data.txt', data_str);
-  
+  save_on_SD("time_log.txt", data_str);
+
   //save_on_SD("r_sensor.txt", String(R_sens));
   Serial.print("R_sens: ");
   Serial.println(R_sens);
@@ -286,6 +271,8 @@ void loop()
     Serial.println(R_heater, 3);
     Serial.print("PID output: ");
     Serial.println(PID_output);
+
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
     duration = millis();
   }
