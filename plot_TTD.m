@@ -13,11 +13,12 @@ r_should_values = [8, 10, 12, 15, 20, 27, 39, 47, 56, 82];
 
 ph1 = bar(r_measured_values);
 yticks(r_measured_values(:, 1))
-yticklabels(r_measured_values(:, 1))
-xticklabels(r_should_values)
+yticklabels(r_measured_values(:, 1));
+xticklabels(r_should_values);
 
-xlabel('Testwiderstand [k\Omega]');
-ylabel('Gemessener Widerstand [\Omega]');
+xlabel('Testwiderstand [k\Omega]', 'FontSize', 16);
+ylabel('Gemessener Widerstand [\Omega]', 'FontSize', 16);
 
 legends = {'Gemessener Widerstand', 'Testwiderstand'};
 lh = legend(ph1, legends, 'Location','northwest');
+fontsize(lh, 14, 'points')

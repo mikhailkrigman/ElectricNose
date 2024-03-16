@@ -33,7 +33,7 @@
 class ChainedResistanceArray
 {
   private:
-    double heater_resistances[3] = {98, 108, 118};
+    double heater_resistances[3] = {98, 108, 120};
     int current_heater_index = 0;
     int next_heater_index = 0;
   public:
@@ -64,7 +64,7 @@ const double R_ref = 10.0 * pow(10, 3); // 10 kOhm
 //     Input,    Output,     Setpoint
 double R_heater, PID_output, R_heater_goal;
 ChainedResistanceArray r_heater_goal(&R_heater_goal);
-double Kp = 30, Ki = 1, integralSum = 0;
+double Kp = 20, Ki = 5, integralSum = 0;
 double U_heater, I_heater;
 
 double control_voltage; // always in units!
@@ -87,6 +87,8 @@ const byte hours = 00;
 const byte day = 14;
 const byte month = 3;
 const byte year = 24;
+
+unsigned long duration;
 
 void setup_rtc(RTCZero& rtc)
 {
@@ -216,7 +218,7 @@ void setup_standbyButton(){
 
 
 void setup_control_unit(){
-  R_heater_goal = 98; // set setpoint for PID-controller
+  R_heater_goal = 118; // set setpoint for PID-controller
 
   control_voltage = v2unit(1.0);
   
@@ -236,7 +238,15 @@ void compute_control_voltage(){
   PID_output = constrain(Kp * error + integralSum, 1, 1023);
 
   control_voltage = PID_output; 
-  analogWrite(PIN_DAC, control_voltage); 
+  analogWrite(PIN_DAC, control_voltage);
+  unsigned long now = millis();
+  if (now - duration > 500){
+    Serial.println("U_heater: " + String(U_heater));
+    Serial.println(control_voltage);
+    Serial.print("Heater resistance: ");
+    Serial.println(R_heater, 3);
+    duration = millis();
+  }
 }
 
 String RTCTime2string(RTCZero rtc){
@@ -302,7 +312,7 @@ double unit2v(int unit){
   return (3.3 * ((1.0 * unit) / 1023));
 }
 
-unsigned long duration;
+
 void setup()
 {
   Serial.begin(9600);
@@ -324,7 +334,7 @@ void loop()
   unsigned long start_measure_time = millis();
   unsigned long end_measure_time = millis();
   
-  while(end_measure_time - start_measure_time < 1000 * 60 * 15){
+  //while(end_measure_time - start_measure_time < 1000 * 60 * 5){
     while(Serial.available()) {
       delay(2);  //delay to allow byte to arrive in input buffer
       char c = Serial.read();
@@ -350,40 +360,40 @@ void loop()
     double R_sens = timeToDigigtal(PIN_Rsens, PIN_Rref);
     String data_str;
     data_str += RTCTime2string(my_rtc);
-    data_str += "#" + String(R_sens);
+    data_str += "#" + String(R_heater);
 
-    save_on_SD("time_log.txt", data_str);
+    save_on_SD("pid_log.txt", data_str);
 
-    Serial.print("R_sens: ");
-    Serial.println(R_sens);
+    //Serial.print("R_sens: ");
+    //Serial.println(R_sens);
 
-    unsigned long now = millis();
-    if (now - duration > 1000){
-      Serial.print("Heater voltage: ");
-      Serial.println(U_heater, 3);
-      Serial.print("Heater current: ");
-      Serial.println(I_heater, 3);
-      Serial.print("Heater resistance: ");
-      Serial.println(R_heater, 3);
-      Serial.print("PID output: ");
-      Serial.println(PID_output);
+    //unsigned long now = millis();
+    //if (now - duration > 1000){
+    //  Serial.print("Heater voltage: ");
+    //  Serial.println(U_heater, 3);
+    //  Serial.print("Heater current: ");
+    //  Serial.println(I_heater, 3);
+    //  Serial.print("Heater resistance: ");
+    //  Serial.println(R_heater, 3);
+    //  Serial.print("PID output: ");
+    //  Serial.println(PID_output);
 
-      digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+    //  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
-      duration = millis();
-    }
+    //  duration = millis();
+    //}
 
     end_measure_time = millis();
-  }
+  //}
 
-  r_heater_goal++;
-
-  unsigned long start_waiting_for_r_heater_setup = millis();
-  unsigned long end_waiting_for_r_heater_setup = millis();
-  while(end_waiting_for_r_heater_setup - start_waiting_for_r_heater_setup < 1000 * 60 * 3){
-    compute_control_voltage();
-    end_waiting_for_r_heater_setup = millis();
-  }
+  //r_heater_goal++;
+  //
+  //unsigned long start_waiting_for_r_heater_setup = millis();
+  //unsigned long end_waiting_for_r_heater_setup = millis();
+  //while(end_waiting_for_r_heater_setup - start_waiting_for_r_heater_setup < 1000 * 60 * 3){
+  //  compute_control_voltage();
+  //  end_waiting_for_r_heater_setup = millis();
+  //}
 }
 
 
