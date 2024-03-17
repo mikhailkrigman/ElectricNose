@@ -26,7 +26,6 @@ for i in range(10):
     relative_error = (abs(TTD_means[i] - TTD_Test[i]) / TTD_Test[i]) * 100
     errors.append(relative_error)
 
-print(errors)
 
 abw = [2.96, 
  0.15,
@@ -39,13 +38,11 @@ abw = [2.96,
  1.13,
  0.11]
 
-print(sum(abw)/len(abw))
+def secToTime(sec: int):
+    hours = int(sec / 3600)
+    minutes = int((sec - 3600 * hours) / 60)
+    seconds = int(sec - 3600 * hours - 60 * minutes)
+    print((hours + 15) % 24, minutes, seconds, sep=":")
 
-k = 330.0 / (120 - 83)
-b = 350 - k * 120.0
-
-r = 118
-
-t = k*r + b
-
-print("Temp: ",t)
+secToTime(23775)
+secToTime(77022)

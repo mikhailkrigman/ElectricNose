@@ -33,7 +33,7 @@
 class ChainedResistanceArray
 {
   private:
-    double heater_resistances[3] = {98, 108, 120};
+    double heater_resistances[3] = {98, 108, 118};
     int current_heater_index = 0;
     int next_heater_index = 0;
   public:
@@ -218,7 +218,7 @@ void setup_standbyButton(){
 
 
 void setup_control_unit(){
-  R_heater_goal = 118; // set setpoint for PID-controller
+  R_heater_goal = 98; // set setpoint for PID-controller
 
   control_voltage = v2unit(1.0);
   
@@ -334,7 +334,7 @@ void loop()
   unsigned long start_measure_time = millis();
   unsigned long end_measure_time = millis();
   
-  //while(end_measure_time - start_measure_time < 1000 * 60 * 5){
+  while(end_measure_time - start_measure_time < 1000 * 60 * 15){
     while(Serial.available()) {
       delay(2);  //delay to allow byte to arrive in input buffer
       char c = Serial.read();
@@ -360,9 +360,10 @@ void loop()
     double R_sens = timeToDigigtal(PIN_Rsens, PIN_Rref);
     String data_str;
     data_str += RTCTime2string(my_rtc);
+    data_str += "#" + String(R_sens);
     data_str += "#" + String(R_heater);
 
-    save_on_SD("pid_log.txt", data_str);
+    save_on_SD("data_log.txt", data_str);
 
     //Serial.print("R_sens: ");
     //Serial.println(R_sens);
@@ -384,16 +385,16 @@ void loop()
     //}
 
     end_measure_time = millis();
-  //}
+  }
 
-  //r_heater_goal++;
-  //
-  //unsigned long start_waiting_for_r_heater_setup = millis();
-  //unsigned long end_waiting_for_r_heater_setup = millis();
-  //while(end_waiting_for_r_heater_setup - start_waiting_for_r_heater_setup < 1000 * 60 * 3){
-  //  compute_control_voltage();
-  //  end_waiting_for_r_heater_setup = millis();
-  //}
+  r_heater_goal++;
+  
+  unsigned long start_waiting_for_r_heater_setup = millis();
+  unsigned long end_waiting_for_r_heater_setup = millis();
+  while(end_waiting_for_r_heater_setup - start_waiting_for_r_heater_setup < 1000 * 60 * 3){
+    compute_control_voltage();
+    end_waiting_for_r_heater_setup = millis();
+  }
 }
 
 
